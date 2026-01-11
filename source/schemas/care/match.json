@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/match.json",
+  "title": "Care Match",
+  "description": "Core capability for matching care seekers with care resources. Equivalent to UCP Checkout.",
+
+  "type": "object",
+  "required": ["id", "status", "needs"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique match session identifier."
+    },
+    "care_index": {
+      "$ref": "../care_index.json#/$defs/response_match",
+      "description": "Protocol metadata for this response."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["searching", "requires_input", "matched", "connected", "expired", "cancelled"],
+      "description": "Current state of the match session."
+    },
+    "care_seeker": {
+      "$ref": "types/care_seeker.json",
+      "description": "Entity seeking care."
+    },
+    "needs": {
+      "type": "array",
+      "description": "Care needs being matched.",
+      "items": {"$ref": "types/care_need.json"}
+    },
+    "matches": {
+      "type": "array",
+      "description": "Matched resources for the expressed needs.",
+      "items": {"$ref": "#/$defs/match_result"}
+    },
+    "escalation": {
+      "$ref": "#/$defs/escalation",
+      "description": "Human escalation details when status is requires_input."
+    },
+    "messages": {
+      "type": "array",
+      "description": "Informational, warning, or error messages.",
+      "items": {"$ref": "types/message.json"}
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the match session was created."
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the match session expires if not completed."
+    },
+    "links": {
+      "type": "array",
+      "description": "Related actions and resources.",
+      "items": {"$ref": "types/link.json"}
+    }
+  },
+
+  "$defs": {
+    "match_result": {
+      "type": "object",
+      "description": "A matched resource for a care need.",
+      "properties": {
+        "need_id": {
+          "type": "string",
+          "description": "ID of the care need this matches."
+        },
+        "resource": {
+          "$ref": "types/resource.json",
+          "description": "The matched resource."
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Match quality score (0-1)."
+        },
+        "score_breakdown": {
+          "type": "object",
+          "description": "Components of the match score.",
+          "properties": {
+            "capability_match": {"type": "number"},
+            "availability_match": {"type": "number"},
+            "location_match": {"type": "number"},
+            "budget_match": {"type": "number"},
+            "quality_score": {"type": "number"}
+          }
+        },
+        "available_windows": {
+          "type": "array",
+          "description": "Specific time windows when this resource can provide care.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "start": {"type": "string", "format": "date-time"},
+              "end": {"type": "string", "format": "date-time"}
+            }
+          }
+        },
+        "estimated_rate": {
+          "type": "object",
+          "description": "Estimated cost for this match.",
+          "properties": {
+            "amount": {"type": "number"},
+            "unit": {"type": "string"},
+            "currency": {"type": "string"}
+          }
+        },
+        "connection_method": {
+          "type": "string",
+          "enum": ["direct", "platform_mediated", "agency_referral"],
+          "description": "How to connect with this resource."
+        }
+      }
+    },
+
+    "escalation": {
+      "type": "object",
+      "description": "Human intervention required.",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": [
+            "no_matches",
+            "budget_exceeded",
+            "schedule_conflict",
+            "special_requirements",
+            "verification_needed",
+            "consent_required",
+            "other"
+          ],
+          "description": "Why escalation is needed."
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable explanation."
+        },
+        "continue_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to continue the match process with human assistance."
+        },
+        "required_inputs": {
+          "type": "array",
+          "description": "Specific inputs needed to proceed.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {"type": "string"},
+              "description": {"type": "string"},
+              "required": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

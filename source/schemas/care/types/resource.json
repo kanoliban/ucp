@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/types/resource.json",
+  "title": "Care Resource",
+  "description": "A resource that can provide care - individual caregiver, agency, program, or service.",
+
+  "type": "object",
+  "required": ["id", "type", "name"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique resource identifier (contributor namespace + local ID)."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["individual", "agency", "program", "service"],
+      "description": "Resource category."
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name for the resource."
+    },
+    "contributor_id": {
+      "type": "string",
+      "description": "Namespace of the contributor who added this resource."
+    },
+    "capabilities": {
+      "type": "array",
+      "description": "Care capabilities this resource provides.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "certifications": {
+      "type": "array",
+      "description": "Verified certifications (e.g., CNA, dementia_care, med_admin).",
+      "items": {
+        "type": "string"
+      }
+    },
+    "service_area": {
+      "$ref": "service_area.json",
+      "description": "Geographic area where resource provides care."
+    },
+    "availability": {
+      "$ref": "availability.json",
+      "description": "When resource is available to provide care."
+    },
+    "rate_range": {
+      "type": "object",
+      "description": "Typical rate range for services.",
+      "properties": {
+        "min": {"type": "number"},
+        "max": {"type": "number"},
+        "unit": {
+          "type": "string",
+          "enum": ["hour", "visit", "day", "week", "month"]
+        },
+        "currency": {
+          "type": "string",
+          "default": "USD"
+        }
+      }
+    },
+    "accepts_programs": {
+      "type": "array",
+      "description": "Benefit programs accepted for payment.",
+      "items": {"type": "string"}
+    },
+    "quality_signals": {
+      "$ref": "quality_signals.json",
+      "description": "Aggregated quality indicators."
+    },
+    "contact": {
+      "$ref": "contact.json",
+      "description": "How to reach this resource."
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When resource information was last verified."
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When resource record was last modified."
+    }
+  }
+}

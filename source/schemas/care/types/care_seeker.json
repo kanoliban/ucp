@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/types/care_seeker.json",
+  "title": "Care Seeker",
+  "description": "Person or family seeking care resources.",
+
+  "type": "object",
+  "required": ["id"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique care seeker identifier."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["individual", "family", "care_coordinator", "organization"],
+      "description": "Type of entity seeking care."
+    },
+    "contact": {
+      "$ref": "contact.json",
+      "description": "Primary contact for this care seeker."
+    },
+    "location": {
+      "$ref": "service_location.json",
+      "description": "Where care will be provided."
+    },
+    "care_recipients": {
+      "type": "array",
+      "description": "People who will receive care.",
+      "items": {"$ref": "care_recipient.json"}
+    },
+    "existing_network": {
+      "type": "object",
+      "description": "Information about existing care network.",
+      "properties": {
+        "has_family_support": {"type": "boolean"},
+        "has_professional_caregivers": {"type": "boolean"},
+        "has_agency_coverage": {"type": "boolean"},
+        "coverage_percentage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Current percentage of care needs covered."
+        }
+      }
+    },
+    "benefit_eligibility": {
+      "type": "array",
+      "description": "Benefit programs the seeker is eligible for.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "program": {"type": "string"},
+          "verified": {"type": "boolean"},
+          "verified_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "description": "Care preferences.",
+      "properties": {
+        "language": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "gender_preference": {
+          "type": "string",
+          "enum": ["male", "female", "no_preference"]
+        },
+        "pet_friendly": {"type": "boolean"},
+        "smoking": {
+          "type": "string",
+          "enum": ["no_smoking", "smoking_ok", "no_preference"]
+        }
+      }
+    },
+    "consent": {
+      "$ref": "consent.json",
+      "description": "Consent and authorization information."
+    }
+  }
+}

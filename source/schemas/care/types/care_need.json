@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/types/care_need.json",
+  "title": "Care Need",
+  "description": "A specific care requirement expressed by a care seeker.",
+
+  "type": "object",
+  "required": ["id", "type"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique need identifier within the match session."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "respite",
+        "overnight",
+        "transportation",
+        "companionship",
+        "personal_care",
+        "skilled_nursing",
+        "therapy",
+        "meal_prep",
+        "housekeeping",
+        "medication_management",
+        "emergency_backup",
+        "other"
+      ],
+      "description": "Category of care needed."
+    },
+    "description": {
+      "type": "string",
+      "description": "Free-text description of the need."
+    },
+    "required_capabilities": {
+      "type": "array",
+      "description": "Specific capabilities required (e.g., dementia_care, mobility_assist).",
+      "items": {"type": "string"}
+    },
+    "preferred_capabilities": {
+      "type": "array",
+      "description": "Nice-to-have capabilities that improve match quality.",
+      "items": {"type": "string"}
+    },
+    "schedule": {
+      "$ref": "schedule_request.json",
+      "description": "When the care is needed."
+    },
+    "location": {
+      "$ref": "service_location.json",
+      "description": "Where the care will be provided."
+    },
+    "care_recipient": {
+      "$ref": "care_recipient.json",
+      "description": "Information about who will receive care (for matching)."
+    },
+    "budget": {
+      "type": "object",
+      "description": "Budget constraints for this need.",
+      "properties": {
+        "max_rate": {"type": "number"},
+        "unit": {
+          "type": "string",
+          "enum": ["hour", "visit", "day", "week", "month"]
+        },
+        "currency": {
+          "type": "string",
+          "default": "USD"
+        },
+        "benefit_programs": {
+          "type": "array",
+          "description": "Benefit programs available to offset cost.",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "urgency": {
+      "type": "string",
+      "enum": ["routine", "soon", "urgent", "emergency"],
+      "description": "How quickly the need must be filled."
+    },
+    "recurring": {
+      "type": "boolean",
+      "description": "Whether this is a one-time or recurring need."
+    },
+    "recurrence_pattern": {
+      "type": "string",
+      "description": "If recurring, the pattern (e.g., 'weekly on Mon/Wed/Fri')."
+    }
+  }
+}

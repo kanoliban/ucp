@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care_index.json",
+  "title": "Care Index Metadata",
+  "description": "Protocol metadata for Universal Care Protocol discovery profiles and responses.",
+
+  "$defs": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Care Index protocol version in YYYY-MM-DD format."
+    },
+
+    "services": {
+      "type": "object",
+      "description": "Service definitions keyed by reverse-domain service name.",
+      "additionalProperties": {"$ref": "../services/service_schema.json"}
+    },
+
+    "discovery_profile": {
+      "title": "Care Index Discovery Profile",
+      "description": "Full Care Index metadata for /.well-known/care-index discovery.",
+      "type": "object",
+      "required": ["version", "services", "capabilities"],
+      "properties": {
+        "version": {"$ref": "#/$defs/version"},
+        "services": {"$ref": "#/$defs/services"},
+        "capabilities": {
+          "type": "array",
+          "description": "Supported capabilities and extensions.",
+          "items": {"$ref": "capability.json#/$defs/discovery"}
+        },
+        "resource_profile": {
+          "$ref": "#/$defs/resource_profile",
+          "description": "Resource-specific metadata for care providers."
+        }
+      }
+    },
+
+    "resource_profile": {
+      "title": "Resource Profile",
+      "description": "Care resource provider metadata for discovery.",
+      "type": "object",
+      "properties": {
+        "resource_types": {
+          "type": "array",
+          "description": "Types of care this resource provides.",
+          "items": {
+            "type": "string",
+            "enum": ["respite", "overnight", "transportation", "companionship", "personal_care", "skilled_nursing", "therapy", "meal_prep", "housekeeping", "medication_management"]
+          }
+        },
+        "service_area": {
+          "$ref": "care/types/service_area.json",
+          "description": "Geographic area where resource provides care."
+        },
+        "certifications": {
+          "type": "array",
+          "description": "Verified certifications and specializations.",
+          "items": {"type": "string"}
+        },
+        "accepts_programs": {
+          "type": "array",
+          "description": "Benefit programs accepted (e.g., Medicaid waiver codes).",
+          "items": {"type": "string"}
+        },
+        "availability_pattern": {
+          "$ref": "care/types/availability.json",
+          "description": "Typical availability windows."
+        }
+      }
+    },
+
+    "response_match": {
+      "title": "Care Index Match Response",
+      "description": "Care Index metadata for match responses.",
+      "type": "object",
+      "required": ["version", "capabilities"],
+      "properties": {
+        "version": {"$ref": "#/$defs/version"},
+        "capabilities": {
+          "type": "array",
+          "description": "Active capabilities for this response.",
+          "items": {"$ref": "capability.json#/$defs/response"}
+        }
+      }
+    },
+
+    "response_session": {
+      "title": "Care Index Session Response",
+      "description": "Care Index metadata for care session responses.",
+      "type": "object",
+      "required": ["version", "capabilities"],
+      "properties": {
+        "version": {"$ref": "#/$defs/version"},
+        "capabilities": {
+          "type": "array",
+          "description": "Active capabilities for this response.",
+          "items": {"$ref": "capability.json#/$defs/response"}
+        }
+      }
+    }
+  }
+}

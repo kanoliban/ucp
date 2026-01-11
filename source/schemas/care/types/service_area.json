@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/types/service_area.json",
+  "title": "Service Area",
+  "description": "Geographic area where a resource provides care.",
+
+  "type": "object",
+  "required": ["type"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["radius", "zip_codes", "counties", "metro", "state", "nationwide"],
+      "description": "How the service area is defined."
+    },
+    "center": {
+      "type": "object",
+      "description": "Center point for radius-based areas.",
+      "properties": {
+        "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+        "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+        "address": {"type": "string"}
+      }
+    },
+    "radius_miles": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Radius in miles from center (for radius type)."
+    },
+    "zip_codes": {
+      "type": "array",
+      "description": "List of ZIP codes served.",
+      "items": {"type": "string", "pattern": "^\\d{5}(-\\d{4})?$"}
+    },
+    "counties": {
+      "type": "array",
+      "description": "List of counties served (FIPS codes or names).",
+      "items": {"type": "string"}
+    },
+    "states": {
+      "type": "array",
+      "description": "List of states served (two-letter codes).",
+      "items": {"type": "string", "pattern": "^[A-Z]{2}$"}
+    },
+    "metro_area": {
+      "type": "string",
+      "description": "Metropolitan statistical area name."
+    },
+    "exclusions": {
+      "type": "array",
+      "description": "ZIP codes or areas explicitly not served within the main area.",
+      "items": {"type": "string"}
+    }
+  }
+}

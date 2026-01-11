@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/types/availability.json",
+  "title": "Availability",
+  "description": "When a care resource is available to provide care.",
+
+  "type": "object",
+  "properties": {
+    "pattern": {
+      "type": "object",
+      "description": "Recurring availability pattern.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["weekly", "monthly", "custom"],
+          "description": "Pattern type."
+        },
+        "weekly": {
+          "type": "object",
+          "description": "Weekly availability by day.",
+          "properties": {
+            "monday": {"$ref": "#/$defs/day_availability"},
+            "tuesday": {"$ref": "#/$defs/day_availability"},
+            "wednesday": {"$ref": "#/$defs/day_availability"},
+            "thursday": {"$ref": "#/$defs/day_availability"},
+            "friday": {"$ref": "#/$defs/day_availability"},
+            "saturday": {"$ref": "#/$defs/day_availability"},
+            "sunday": {"$ref": "#/$defs/day_availability"}
+          }
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone for availability times."
+        }
+      }
+    },
+    "exceptions": {
+      "type": "array",
+      "description": "Specific dates with different availability.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "date": {"type": "string", "format": "date"},
+          "available": {"type": "boolean"},
+          "windows": {
+            "type": "array",
+            "items": {"$ref": "#/$defs/time_window"}
+          },
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "real_time": {
+      "type": "object",
+      "description": "Real-time availability status.",
+      "properties": {
+        "available_now": {"type": "boolean"},
+        "next_available": {"type": "string", "format": "date-time"},
+        "current_capacity": {
+          "type": "integer",
+          "description": "Number of additional clients that can be taken."
+        },
+        "updated_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "description": "Availability preferences.",
+      "properties": {
+        "min_hours_per_shift": {"type": "number"},
+        "max_hours_per_shift": {"type": "number"},
+        "max_hours_per_week": {"type": "number"},
+        "prefers_consistent_schedule": {"type": "boolean"},
+        "short_notice_ok": {"type": "boolean"},
+        "overnight_ok": {"type": "boolean"},
+        "weekends_ok": {"type": "boolean"}
+      }
+    }
+  },
+
+  "$defs": {
+    "day_availability": {
+      "type": "object",
+      "properties": {
+        "available": {"type": "boolean"},
+        "windows": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/time_window"}
+        }
+      }
+    },
+    "time_window": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "pattern": "^([01]?[0-9]|2[0-3]):[0-5][0-9]$",
+          "description": "Start time in HH:MM format."
+        },
+        "end": {
+          "type": "string",
+          "pattern": "^([01]?[0-9]|2[0-3]):[0-5][0-9]$",
+          "description": "End time in HH:MM format."
+        }
+      }
+    }
+  }
+}
