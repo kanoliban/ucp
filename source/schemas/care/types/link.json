@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/types/link.json",
+  "title": "Link",
+  "description": "HATEOAS-style link for related actions and resources in Care Index responses.",
+
+  "type": "object",
+  "required": ["rel", "href"],
+  "properties": {
+    "rel": {
+      "type": "string",
+      "description": "Relationship type describing what this link represents.",
+      "enum": [
+        "self",
+        "match",
+        "session",
+        "resource",
+        "care_seeker",
+        "availability",
+        "schedule",
+        "cancel",
+        "confirm",
+        "escalate",
+        "handoff",
+        "notes",
+        "billing",
+        "documentation",
+        "next",
+        "previous"
+      ]
+    },
+    "href": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL for the linked resource or action."
+    },
+    "method": {
+      "type": "string",
+      "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+      "description": "HTTP method for this link.",
+      "default": "GET"
+    },
+    "title": {
+      "type": "string",
+      "description": "Human-readable title for the link."
+    },
+    "type": {
+      "type": "string",
+      "description": "Media type of the linked resource."
+    },
+    "templated": {
+      "type": "boolean",
+      "description": "Whether the href contains URI template variables.",
+      "default": false
+    }
+  }
+}

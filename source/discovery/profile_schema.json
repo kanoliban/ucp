@@ -1,31 +1,175 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ucp.dev/schemas/discovery/profile.json",
-  "title": "UCP Discovery Profile",
-  "description": "Schema for UCP discovery profile returned from /.well-known/ucp.",
+  "$id": "https://careindex.dev/schemas/discovery/profile.json",
+  "title": "Care Index Discovery Profile",
+  "description": "Schema for Care Index discovery profile returned from /.well-known/care-index. Enables autonomous discovery of care resources by platforms and agents.",
   "type": "object",
   "additionalProperties": true,
-  "required": ["ucp"],
+  "required": ["care_index"],
   "properties": {
-    "ucp": {
-      "$ref": "../schemas/ucp.json#/$defs/discovery_profile"
+    "care_index": {
+      "$ref": "../schemas/care_index.json#/$defs/discovery_profile"
     },
-    "payment": {
+    "matching": {
       "type": "object",
-      "description": "Payment configuration containing handlers",
+      "description": "Matching configuration for care coordination.",
       "properties": {
-        "handlers": {
+        "supported_transports": {
           "type": "array",
-          "description": "Payment handler definitions that describe how instruments can be collected",
+          "description": "Transport protocols supported for matching operations.",
           "items": {
-            "$ref": "../schemas/shopping/types/payment_handler.json"
+            "type": "string",
+            "enum": ["rest", "mcp", "a2a", "webhook"]
           }
+        },
+        "match_endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Primary endpoint for initiating match requests."
+        },
+        "real_time_availability": {
+          "type": "boolean",
+          "description": "Whether this resource supports real-time availability queries.",
+          "default": false
+        },
+        "auto_match": {
+          "type": "boolean",
+          "description": "Whether autonomous matching is supported (no human in loop).",
+          "default": false
+        },
+        "requires_consent": {
+          "type": "boolean",
+          "description": "Whether explicit consent is required before sharing details.",
+          "default": true
+        }
+      }
+    },
+    "availability": {
+      "type": "object",
+      "description": "How availability information is exposed.",
+      "properties": {
+        "update_frequency": {
+          "type": "string",
+          "enum": ["real_time", "hourly", "daily", "weekly", "manual"],
+          "description": "How often availability is updated."
+        },
+        "availability_endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Endpoint for querying availability."
+        },
+        "calendar_feed": {
+          "type": "string",
+          "format": "uri",
+          "description": "Optional iCal/ICS feed URL for availability."
+        },
+        "webhook_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Webhook endpoint for availability change notifications."
+        }
+      }
+    },
+    "credentials": {
+      "type": "object",
+      "description": "Credential and verification configuration.",
+      "properties": {
+        "verification_status": {
+          "type": "string",
+          "enum": ["unverified", "self_attested", "platform_verified", "issuer_verified"],
+          "description": "Current verification level."
+        },
+        "verifiable_credentials": {
+          "type": "array",
+          "description": "W3C Verifiable Credentials held by this resource.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {"type": "string"},
+              "issuer": {"type": "string"},
+              "issued_at": {"type": "string", "format": "date-time"},
+              "expires_at": {"type": "string", "format": "date-time"},
+              "verification_url": {"type": "string", "format": "uri"}
+            }
+          }
+        },
+        "background_check": {
+          "type": "object",
+          "properties": {
+            "completed": {"type": "boolean"},
+            "provider": {"type": "string"},
+            "completed_at": {"type": "string", "format": "date-time"},
+            "valid_until": {"type": "string", "format": "date-time"}
+          }
+        }
+      }
+    },
+    "benefits": {
+      "type": "object",
+      "description": "Benefit program acceptance and verification.",
+      "properties": {
+        "accepted_programs": {
+          "type": "array",
+          "description": "Benefit programs this resource accepts.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "program_id": {
+                "type": "string",
+                "description": "Namespaced program identifier (e.g., gov.medicaid.waiver.cdcs)."
+              },
+              "program_name": {"type": "string"},
+              "provider_id": {
+                "type": "string",
+                "description": "Resource's provider ID with this program."
+              },
+              "verification_status": {
+                "type": "string",
+                "enum": ["pending", "active", "suspended", "expired"]
+              }
+            }
+          }
+        },
+        "eligibility_check_endpoint": {
+          "type": "string",
+          "format": "uri",
+          "description": "Endpoint for checking care seeker eligibility."
+        }
+      }
+    },
+    "session_hooks": {
+      "type": "object",
+      "description": "Webhook configuration for care session lifecycle events.",
+      "properties": {
+        "events_supported": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "session.scheduled",
+              "session.started",
+              "session.completed",
+              "session.cancelled",
+              "session.incident_reported",
+              "session.notes_added",
+              "handoff.requested",
+              "handoff.completed"
+            ]
+          }
+        },
+        "webhook_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "webhook_secret_header": {
+          "type": "string",
+          "description": "Header name for webhook authentication."
         }
       }
     },
     "signing_keys": {
       "type": "array",
-      "description": "Public keys for signature verification (JWK format). Used to verify signed responses, webhooks, and other authenticated messages from this party.",
+      "description": "Public keys for signature verification (JWK format). Used to verify signed responses, webhooks, and other authenticated messages from this resource.",
       "items": {
         "type": "object",
         "required": ["kid", "kty"],
@@ -67,6 +211,24 @@
             "type": "string",
             "description": "Algorithm (e.g., 'ES256', 'RS256')."
           }
+        }
+      }
+    },
+    "contact": {
+      "type": "object",
+      "description": "Contact information for coordination and escalation.",
+      "properties": {
+        "coordination_email": {"type": "string", "format": "email"},
+        "coordination_phone": {"type": "string"},
+        "escalation_email": {"type": "string", "format": "email"},
+        "escalation_phone": {"type": "string"},
+        "preferred_contact_method": {
+          "type": "string",
+          "enum": ["email", "phone", "sms", "in_app"]
+        },
+        "response_time_sla": {
+          "type": "string",
+          "description": "Expected response time (e.g., '2h', '24h')."
         }
       }
     }

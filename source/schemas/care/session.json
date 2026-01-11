@@ -1,0 +1,322 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/session.json",
+  "title": "Care Session",
+  "description": "Represents a care session lifecycle from scheduled through completed. Equivalent to UCP Order/Fulfillment.",
+
+  "type": "object",
+  "required": ["id", "status", "care_seeker_id", "resource_id"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique session identifier."
+    },
+    "care_index": {
+      "$ref": "../care_index.json#/$defs/response_match",
+      "description": "Protocol metadata for this response."
+    },
+    "match_id": {
+      "type": "string",
+      "description": "ID of the match that created this session."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "scheduled",
+        "confirmed",
+        "in_progress",
+        "completed",
+        "cancelled",
+        "no_show",
+        "incident"
+      ],
+      "description": "Current session state."
+    },
+    "care_seeker_id": {
+      "type": "string",
+      "description": "ID of the care seeker receiving care."
+    },
+    "resource_id": {
+      "type": "string",
+      "description": "ID of the care resource providing care."
+    },
+    "resource": {
+      "$ref": "types/resource.json",
+      "description": "Embedded resource details (optional)."
+    },
+    "care_type": {
+      "type": "string",
+      "description": "Type of care being provided.",
+      "enum": [
+        "respite",
+        "overnight",
+        "transportation",
+        "companionship",
+        "personal_care",
+        "skilled_nursing",
+        "therapy",
+        "meal_prep",
+        "housekeeping",
+        "medication_management",
+        "other"
+      ]
+    },
+    "scheduled_window": {
+      "type": "object",
+      "description": "Planned time window for the session.",
+      "properties": {
+        "start": {"type": "string", "format": "date-time"},
+        "end": {"type": "string", "format": "date-time"},
+        "timezone": {"type": "string"}
+      },
+      "required": ["start", "end"]
+    },
+    "actual_window": {
+      "type": "object",
+      "description": "Actual time window (filled during/after session).",
+      "properties": {
+        "check_in": {"type": "string", "format": "date-time"},
+        "check_out": {"type": "string", "format": "date-time"},
+        "check_in_location": {"$ref": "#/$defs/location"},
+        "check_out_location": {"$ref": "#/$defs/location"}
+      }
+    },
+    "location": {
+      "$ref": "#/$defs/location",
+      "description": "Where care is being provided."
+    },
+    "tasks": {
+      "type": "array",
+      "description": "Tasks to be completed during the session.",
+      "items": {"$ref": "#/$defs/session_task"}
+    },
+    "notes": {
+      "type": "array",
+      "description": "Notes added during the session.",
+      "items": {"$ref": "#/$defs/session_note"}
+    },
+    "handoff": {
+      "$ref": "#/$defs/handoff",
+      "description": "Handoff information to next caregiver."
+    },
+    "incidents": {
+      "type": "array",
+      "description": "Any incidents reported during the session.",
+      "items": {"$ref": "#/$defs/incident"}
+    },
+    "billing": {
+      "$ref": "#/$defs/billing",
+      "description": "Billing and payment information."
+    },
+    "verification": {
+      "$ref": "#/$defs/verification",
+      "description": "Electronic visit verification (EVV) data."
+    },
+    "messages": {
+      "type": "array",
+      "description": "Informational, warning, or error messages.",
+      "items": {"$ref": "types/message.json"}
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+
+  "$defs": {
+    "location": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["home", "facility", "community", "transport", "virtual"]
+        },
+        "address": {"type": "string"},
+        "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+        "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+        "notes": {"type": "string"}
+      }
+    },
+
+    "session_task": {
+      "type": "object",
+      "properties": {
+        "id": {"type": "string"},
+        "description": {"type": "string"},
+        "category": {
+          "type": "string",
+          "enum": [
+            "medication",
+            "personal_care",
+            "mobility",
+            "nutrition",
+            "exercise",
+            "appointment",
+            "household",
+            "social",
+            "observation",
+            "other"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "completed", "skipped", "unable"]
+        },
+        "completed_at": {"type": "string", "format": "date-time"},
+        "notes": {"type": "string"},
+        "requires_verification": {"type": "boolean"}
+      }
+    },
+
+    "session_note": {
+      "type": "object",
+      "properties": {
+        "id": {"type": "string"},
+        "type": {
+          "type": "string",
+          "enum": ["general", "care", "medication", "behavior", "health", "handoff"]
+        },
+        "content": {"type": "string"},
+        "visibility": {
+          "type": "string",
+          "enum": ["all", "care_team", "professionals_only", "private"],
+          "description": "Who can see this note."
+        },
+        "created_at": {"type": "string", "format": "date-time"},
+        "created_by": {"type": "string"}
+      }
+    },
+
+    "handoff": {
+      "type": "object",
+      "description": "Information passed to the next caregiver.",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Brief summary of the session."
+        },
+        "next_caregiver_id": {"type": "string"},
+        "priority_items": {
+          "type": "array",
+          "description": "Things the next caregiver should know immediately.",
+          "items": {"type": "string"}
+        },
+        "medication_updates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "medication": {"type": "string"},
+              "administered": {"type": "boolean"},
+              "time": {"type": "string", "format": "date-time"},
+              "notes": {"type": "string"}
+            }
+          }
+        },
+        "mood_assessment": {
+          "type": "string",
+          "description": "General mood/state of care recipient."
+        },
+        "acknowledged_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When next caregiver acknowledged the handoff."
+        }
+      }
+    },
+
+    "incident": {
+      "type": "object",
+      "properties": {
+        "id": {"type": "string"},
+        "type": {
+          "type": "string",
+          "enum": [
+            "fall",
+            "medication_error",
+            "behavior_issue",
+            "health_concern",
+            "safety_concern",
+            "equipment_issue",
+            "scheduling_issue",
+            "other"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "description": {"type": "string"},
+        "occurred_at": {"type": "string", "format": "date-time"},
+        "reported_at": {"type": "string", "format": "date-time"},
+        "reported_by": {"type": "string"},
+        "actions_taken": {"type": "string"},
+        "follow_up_required": {"type": "boolean"},
+        "notifications_sent": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "recipient_type": {"type": "string"},
+              "sent_at": {"type": "string", "format": "date-time"},
+              "method": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+
+    "billing": {
+      "type": "object",
+      "properties": {
+        "rate": {
+          "type": "object",
+          "properties": {
+            "amount": {"type": "number"},
+            "unit": {"type": "string", "enum": ["hour", "visit", "day"]},
+            "currency": {"type": "string", "default": "USD"}
+          }
+        },
+        "total_amount": {"type": "number"},
+        "hours_worked": {"type": "number"},
+        "benefit_program": {
+          "type": "object",
+          "properties": {
+            "program_id": {"type": "string"},
+            "authorization_number": {"type": "string"},
+            "units_used": {"type": "number"},
+            "units_remaining": {"type": "number"}
+          }
+        },
+        "payment_status": {
+          "type": "string",
+          "enum": ["pending", "submitted", "approved", "paid", "denied"]
+        },
+        "invoice_id": {"type": "string"}
+      }
+    },
+
+    "verification": {
+      "type": "object",
+      "description": "Electronic Visit Verification (EVV) compliance data.",
+      "properties": {
+        "evv_required": {"type": "boolean"},
+        "evv_compliant": {"type": "boolean"},
+        "verification_method": {
+          "type": "string",
+          "enum": ["gps", "telephony", "biometric", "manual"]
+        },
+        "check_in_verified": {"type": "boolean"},
+        "check_out_verified": {"type": "boolean"},
+        "discrepancies": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/types/quality_signals.json",
+  "title": "Quality Signals",
+  "description": "Quality and trust signals for care resources.",
+
+  "type": "object",
+  "properties": {
+    "overall_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Composite quality score (0-5 scale)."
+    },
+    "reliability": {
+      "type": "object",
+      "description": "Reliability metrics.",
+      "properties": {
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "on_time_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Percentage of sessions started on time."
+        },
+        "completion_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Percentage of scheduled sessions completed."
+        },
+        "cancellation_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Percentage of sessions cancelled by resource."
+        },
+        "sessions_completed": {
+          "type": "integer",
+          "description": "Total sessions completed."
+        }
+      }
+    },
+    "responsiveness": {
+      "type": "object",
+      "description": "Communication and response metrics.",
+      "properties": {
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "average_response_time": {
+          "type": "string",
+          "description": "Average time to respond to requests (e.g., '2h', '30m')."
+        },
+        "handoff_completion_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Percentage of sessions with completed handoffs."
+        }
+      }
+    },
+    "care_quality": {
+      "type": "object",
+      "description": "Direct care quality indicators.",
+      "properties": {
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "task_completion_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "incident_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Incidents per session (lower is better)."
+        },
+        "family_satisfaction": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Average family satisfaction rating."
+        }
+      }
+    },
+    "reviews": {
+      "type": "object",
+      "description": "Review and rating information.",
+      "properties": {
+        "count": {"type": "integer"},
+        "average_rating": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "recent_reviews": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rating": {"type": "number", "minimum": 0, "maximum": 5},
+              "comment": {"type": "string"},
+              "reviewer_type": {
+                "type": "string",
+                "enum": ["family", "care_seeker", "platform", "agency"]
+              },
+              "created_at": {"type": "string", "format": "date-time"},
+              "verified": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "verification": {
+      "type": "object",
+      "description": "Verification and credential status.",
+      "properties": {
+        "identity_verified": {"type": "boolean"},
+        "background_check_current": {"type": "boolean"},
+        "credentials_verified": {"type": "boolean"},
+        "platform_vetted": {"type": "boolean"},
+        "verification_date": {"type": "string", "format": "date-time"}
+      }
+    },
+    "experience": {
+      "type": "object",
+      "description": "Experience indicators.",
+      "properties": {
+        "years_experience": {"type": "number"},
+        "specializations": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "care_types_experience": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "unique_families_served": {"type": "integer"}
+      }
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When these signals were last calculated."
+    }
+  }
+}

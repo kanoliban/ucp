@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://careindex.dev/schemas/care/types/message.json",
+  "title": "Message",
+  "description": "Informational, warning, or error messages in Care Index responses.",
+
+  "type": "object",
+  "required": ["type", "content"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": ["info", "warning", "error", "success"],
+      "description": "Message severity level."
+    },
+    "code": {
+      "type": "string",
+      "description": "Machine-readable message code for programmatic handling."
+    },
+    "content": {
+      "type": "string",
+      "description": "Human-readable message content."
+    },
+    "field": {
+      "type": "string",
+      "description": "Field path this message relates to (for validation errors)."
+    },
+    "action_required": {
+      "type": "boolean",
+      "description": "Whether user action is required to proceed.",
+      "default": false
+    },
+    "action_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL for taking required action."
+    },
+    "documentation_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to documentation about this message/error."
+    }
+  }
+}
