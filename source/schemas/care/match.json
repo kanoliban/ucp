@@ -120,7 +120,8 @@
 
     "escalation": {
       "type": "object",
-      "description": "Human intervention required.",
+      "description": "Human intervention required. DIVERGENCE: Care Index MUST define fallback strategy. Unlike UCP (which has PSPs as clearing house), care has no guaranteed fallback.",
+      "required": ["reason", "fallback_strategy"],
       "properties": {
         "reason": {
           "type": "string",
@@ -131,6 +132,7 @@
             "special_requirements",
             "verification_needed",
             "consent_required",
+            "version_mismatch",
             "other"
           ],
           "description": "Why escalation is needed."
@@ -138,6 +140,10 @@
         "message": {
           "type": "string",
           "description": "Human-readable explanation."
+        },
+        "fallback_strategy": {
+          "$ref": "#/$defs/fallback_strategy",
+          "description": "DIVERGENCE: Mandatory fallback when no match found. UCP has PSPs; Care Index must be explicit."
         },
         "continue_url": {
           "type": "string",
@@ -155,6 +161,98 @@
               "required": {"type": "boolean"}
             }
           }
+        }
+      }
+    },
+
+    "fallback_strategy": {
+      "type": "object",
+      "description": "DIVERGENCE FROM UCP: Explicit no-match fallback. Care coordination cannot simply fail—families need care regardless of matching algorithm success.",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "human_coordinator",
+            "waitlist",
+            "expand_search",
+            "emergency_backup",
+            "family_network",
+            "agency_referral",
+            "community_board"
+          ],
+          "description": "Primary fallback mechanism when matching fails."
+        },
+        "human_coordinator": {
+          "type": "object",
+          "description": "Route to human coordinator for manual matching.",
+          "properties": {
+            "coordinator_type": {
+              "type": "string",
+              "enum": ["platform_staff", "agency_coordinator", "family_coordinator", "can_helpdesk"]
+            },
+            "contact_method": {"type": "string"},
+            "expected_response_time": {"type": "string"},
+            "escalation_url": {"type": "string", "format": "uri"}
+          }
+        },
+        "waitlist": {
+          "type": "object",
+          "description": "Add to waitlist and notify when resources become available.",
+          "properties": {
+            "position": {"type": "integer"},
+            "estimated_wait": {"type": "string"},
+            "notification_preferences": {
+              "type": "array",
+              "items": {"type": "string", "enum": ["sms", "email", "push", "in_app"]}
+            }
+          }
+        },
+        "expand_search": {
+          "type": "object",
+          "description": "Suggest relaxing constraints to find matches.",
+          "properties": {
+            "suggestions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "constraint": {"type": "string"},
+                  "current_value": {"type": "string"},
+                  "suggested_value": {"type": "string"},
+                  "matches_if_relaxed": {"type": "integer"}
+                }
+              }
+            }
+          }
+        },
+        "emergency_backup": {
+          "type": "object",
+          "description": "Emergency backup pool for urgent needs.",
+          "properties": {
+            "available": {"type": "boolean"},
+            "backup_pool_size": {"type": "integer"},
+            "average_response_time": {"type": "string"},
+            "activate_url": {"type": "string", "format": "uri"}
+          }
+        },
+        "family_network": {
+          "type": "object",
+          "description": "Fall back to existing family care network.",
+          "properties": {
+            "network_members_available": {"type": "integer"},
+            "coverage_possible": {"type": "boolean"},
+            "gap_remains": {"type": "string"}
+          }
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable explanation of fallback options."
+        },
+        "next_steps": {
+          "type": "array",
+          "description": "Ordered list of recommended next steps.",
+          "items": {"type": "string"}
         }
       }
     }

@@ -2,13 +2,83 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://careindex.dev/schemas/care_index.json",
   "title": "Care Index Metadata",
-  "description": "Protocol metadata for Universal Care Protocol discovery profiles and responses.",
+  "description": "Protocol metadata for Universal Care Protocol discovery profiles and responses. Care Index diverges from UCP in key areas—see DIVERGENCES.md.",
 
   "$defs": {
     "version": {
       "type": "string",
       "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
-      "description": "Care Index protocol version in YYYY-MM-DD format."
+      "description": "Care Index protocol version in YYYY-MM-DD format. DIVERGENCE: Care Index requires EXACT version match, not permissive ≤. Mismatch MUST error, not proceed."
+    },
+
+    "version_negotiation": {
+      "type": "object",
+      "description": "DIVERGENCE FROM UCP: Strict version matching. Care is continuous, not transactional. Version drift causes silent coordination failures that harm people.",
+      "required": ["platform_version", "resource_version", "match_status"],
+      "properties": {
+        "platform_version": {"$ref": "#/$defs/version"},
+        "resource_version": {"$ref": "#/$defs/version"},
+        "match_status": {
+          "type": "string",
+          "enum": ["exact_match", "version_mismatch"],
+          "description": "MUST be exact_match to proceed. version_mismatch MUST error."
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Human-readable error when versions mismatch."
+        }
+      }
+    },
+
+    "cache_requirements": {
+      "type": "object",
+      "description": "DIVERGENCE FROM UCP: Mandatory cache limits. Caregiver availability changes hourly. Day-old stale profiles are harmful.",
+      "required": ["max_age_seconds", "must_revalidate"],
+      "properties": {
+        "max_age_seconds": {
+          "type": "integer",
+          "maximum": 14400,
+          "description": "Maximum cache age in seconds. MUST NOT exceed 14400 (4 hours) for availability-sensitive data."
+        },
+        "must_revalidate": {
+          "type": "boolean",
+          "const": true,
+          "description": "Platforms MUST revalidate before using cached profiles for matching."
+        },
+        "availability_max_age_seconds": {
+          "type": "integer",
+          "maximum": 3600,
+          "default": 3600,
+          "description": "Real-time availability data MUST NOT be cached longer than 1 hour."
+        }
+      }
+    },
+
+    "governance": {
+      "type": "object",
+      "description": "DIVERGENCE FROM UCP: Transparent power asymmetries. UCP obscures; Care Index owns.",
+      "properties": {
+        "specification_steward": {
+          "type": "string",
+          "description": "Organization stewarding the open specification.",
+          "const": "Caregiver Action Network (CAN)"
+        },
+        "reference_operator": {
+          "type": "string",
+          "description": "Organization operating the reference implementation.",
+          "const": "CareSupport"
+        },
+        "extension_governance": {
+          "type": "string",
+          "description": "How extensions are governed.",
+          "const": "permissionless_namespace"
+        },
+        "governance_transparency_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL documenting governance structure and decision-making."
+        }
+      }
     },
 
     "services": {
